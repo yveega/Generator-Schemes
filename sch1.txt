@@ -1,0 +1,4 @@
+lamp 0 1 1 0	switch 0 1 0 1	- 0 1 1 1	resister 0 1 0 1	- 0 0 1 1
+- 1 1 1 0	battery 0 1 0 1	- 1 0 1 1	- 0 0 0 0	switch 1 0 1 0
+- 1 1 1 0	resister 0 1 0 1	+ 1 1 1 1	resister 0 1 0 1	- 1 0 0 1
+- 1 1 0 0	lamp 0 1 0 1	- 1 0 0 1

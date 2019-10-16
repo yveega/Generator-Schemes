@@ -1,5 +1,44 @@
 
 
+def make_field(sch):
+    min_x = float("INF")
+    min_y = float("INF")
+    max_x = -float("INF")
+    max_y = -float("INF")
+    for cell in sch.keys():
+        if cell[0] < min_x:
+            min_x = cell[0]
+        if cell[0] > max_x:
+            max_x = cell[0]
+        if cell[1] < min_y:
+            min_y = cell[1]
+        if cell[1] > max_y:
+            max_y = cell[1]
+    print(min_x, max_x, min_y, max_y)
+    res = [["- 0 0 0 0"] * (max_y - min_y + 1) for _ in range(max_x - min_x + 1)]
+    print(len(res), len(res[0]))
+    for cell in sch.keys():
+        if sch[cell][0] == -1:
+            el = '-'
+        elif sch[cell][0] == -2:
+            el = '+'
+        else:
+            el = els[sch[cell][0]][0]
+        w1 = ' 1' if sch[cell][1] else ' 0'
+        w2 = ' 1' if sch[cell][2] else ' 0'
+        w3 = ' 1' if sch[cell][3] else ' 0'
+        w4 = ' 1' if sch[cell][4] else ' 0'
+        print(cell[0] - min_x, cell[1] - min_y)
+        res[cell[0] - min_x][cell[1] - min_y] = el + w1 + w2 + w3 + w4
+    return res
+
+
+def print_in_file(name, field):
+    with open(name, "w") as fo:
+        for line in field:
+            print('\t'.join(line), file=fo)
+
+
 def conns(x1, y1, x2, y2):
     if x1 == x2 and y1 == y2:
         return False, False, False, False
@@ -86,8 +125,12 @@ connections = [{0, 1},
 
 scheme = dict()
 used = set()
-go(1, 0, 0, 0, 0)
+go(2, 0, 0, 0, 0)
 
 print()
 for i in scheme.keys():
     print(i, ':', scheme[i])
+
+print_in_file("sch2.txt", make_field(scheme))
+
+import Generator_schemes

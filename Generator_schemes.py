@@ -55,7 +55,7 @@ class Cell:
                                    self.y + EL_SIZE // 2, fill="black", width=WIRE_WIDTH)
 
 
-with open("sch1.txt", 'r') as fi:
+with open("sch2.txt", 'r') as fi:
     data = []
     for line in fi:
         data.append(line.strip().split('\t'))

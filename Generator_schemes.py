@@ -1,8 +1,9 @@
 from tkinter import *
 EL_SIZE = 100
-TAB = 25
+TAB = 5
 WIRE_WIDTH = 6
 h_or_v_els = {"battery", "switch", "resister"}
+W, H = 2000, 1000
 
 
 class Cell:
@@ -67,7 +68,7 @@ for i in range(len(data)):
         scheme.append(Cell(data[i][j], j, i))
 
 r = Tk()
-c = Canvas(r, width=1000, height=1000, bg="white")
+c = Canvas(r, width=W, height=H, bg="white")
 
 els = []
 

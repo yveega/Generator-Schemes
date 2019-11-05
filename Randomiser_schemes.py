@@ -3,12 +3,14 @@ import random
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-from PIL import Image, ImageDraw, ImageTk
-types_of_els = ["resister", "battery", "switch", "lamp", "lamp", "lamp", "lamp", "switch"]
+from PIL import Image, ImageDraw, ImageFont
+types_of_els = ["resister", "switch", "lamp", "motor", "button", "bell", "condensator"]
 EL_SIZE = 100
 TAB = 5
 WIRE_WIDTH = 6
-h_or_v_els = {"battery", "switch", "resister"}
+h_or_v_els = {"battery", "switch", "resister", "motor", "button", "bell", "condensator"}
+tri_els = {"transistor"}
+one_els = {"contact+", "contact-"}
 
 
 class Cell:
@@ -25,6 +27,24 @@ class Cell:
                     self.img_name = "Im_el/" + data_cell[0] + "/v.png"
                 else:
                     self.img_name = "Im_el/" + data_cell[0] + "/h.png"
+            elif data_cell[0] in tri_els:
+                if not self.up:
+                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
+                elif not self.right:
+                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
+                elif not self.left:
+                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
+                else:
+                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
+            elif data_cell[0] in one_els:
+                if self.up:
+                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
+                elif self.right:
+                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
+                elif self.left:
+                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
+                else:
+                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
             else:
                 self.img_name = "Im_el/" + data_cell[0] + ".png"
         self.x = row * (EL_SIZE + 2 * TAB) + TAB
@@ -61,7 +81,7 @@ class Cell:
                                    self.y + EL_SIZE // 2], fill="black", width=WIRE_WIDTH)
 
 
-def draw(scheme):
+def draw(scheme, num):
     cells = []
     for i in range(len(scheme)):
         for j in range(len(scheme[i])):
@@ -72,6 +92,8 @@ def draw(scheme):
     draw = ImageDraw.Draw(im)
     for el in cells:
         el.draw_on_image(draw, im)
+    font = ImageFont.truetype("UbuntuMono-B.ttf", 25)
+    draw.text([5, 5], str(num), fill="black", align="right", font=font)
     del draw
     return im
 
@@ -159,15 +181,38 @@ def randomise(k_els):
     els[-1] = (els[-1], 0, len(saved_conns) - 1)
     saved_conns[0].add(len(els) - 1)
     saved_conns[-1].add(len(els) - 1)
+    saved_conns[-1].add(len(els))
+    saved_conns[-2].add(len(els) + 1)
+    els += [("contact+", len(saved_conns) - 1, len(saved_conns) - 1),
+            ("contact-", len(saved_conns) - 2, len(saved_conns) - 2)]
 
 
 def change():
     if random.random() > 0.5:
-        new_el = random.choice(types_of_els)
-        num_change = random.randint(0, len(els) - 1)
-        while new_el == els[num_change][0]:
+        if len(saved_conns[0] - saved_conns[1] - {len(els) - 1, len(els) - 2}) > 0\
+                and len(saved_conns[1] - saved_conns[0] - {len(els) - 1, len(els) - 2}) > 0:
+            one = random.choice(list(saved_conns[0] - saved_conns[1] - {len(els) - 1, len(els) - 2}))
+            two = random.choice(list(saved_conns[1] - saved_conns[0] - {len(els) - 1, len(els) - 2}))
+            if els[one][1] == 0:
+                els[one] = (els[one][0], 1, els[one][2])
+            if els[one][2] == 0:
+                els[one] = (els[one][0], els[one][1], 1)
+            if els[two][1] == 1:
+                els[two] = (els[two][0], 0, els[two][2])
+            if els[two][2] == 1:
+                els[two] = (els[two][0], els[two][1], 0)
+            saved_conns[0].remove(one)
+            saved_conns[0].add(two)
+            saved_conns[1].remove(two)
+            saved_conns[1].add(one)
+        else:
             new_el = random.choice(types_of_els)
-        els[num_change] = (new_el, els[num_change][1], els[num_change][2])
+            num_change = random.randint(0, len(els) - 3)
+            while new_el == els[num_change][0]:
+                new_el = random.choice(types_of_els)
+            els[num_change] = (new_el, els[num_change][1], els[num_change][2])
+        return False
+    return True
 
 
 def up(scheme, group, x, y, straight):
@@ -188,16 +233,11 @@ def left(scheme, group, x, y, straight):
 
 def go(scheme, group, x, y, x_last, y_last, straight=0):
     if straight > 7:
-        # print("ESC1")
         return False
     if len(connections[group]) == 0:  # end of part of scheme
-        # print("ESC2")
         return False
     used.add((x, y))
     c = conns(x, y, x_last, y_last)
-    # print(x, y, 'from', x_last, y_last, ':', c, connections[group])
-    # if (x, y) in scheme:
-    #     print(scheme[(x, y)])
     if (x, y) not in scheme and (2 * x_last - x, 2 * y_last - y) not in scheme and (
         len(connections[group] - placed.keys()) > 0
     ) and not (
@@ -243,15 +283,12 @@ def go(scheme, group, x, y, x_last, y_last, straight=0):
                 return True
             else:
                 used.remove((x, y))
-                # print("ESC3")
                 return False
         else:
             used.remove((x, y))
-            # print("ESC4")
             return False
     else:  # if can't use this cell
         used.remove((x, y))
-        # print("ESC5")
         return False
 
 
@@ -269,9 +306,6 @@ def generate(scheme):
             connections.append(i.copy())
         placed = dict()
         START_C = random.randint(0, len(connections) - 1)
-        # print('>>>>>>>>', START_C)
-        # for cell in scheme:
-        # print(cell, scheme[cell])
         go(scheme, START_C, 0, 0, 0, 0)
         placed_conns = {START_C}
         for i in range(len(connections)):
@@ -284,7 +318,6 @@ def generate(scheme):
                 created = False
                 break
             if els[start_el][1] not in placed_conns:
-                # print('>>>>>>>', els[start_el][1])
                 if scheme[placed[start_el]][1]:  # if up
                     if not go(scheme, els[start_el][1], placed[start_el][0] + 1, placed[start_el][1],
                               placed[start_el][0] + 1, placed[start_el][1]):
@@ -313,7 +346,6 @@ def generate(scheme):
                     err = False
                     break
             elif els[start_el][2] not in placed_conns:
-                # print('>>>>>>>>', els[start_el][2])
                 if scheme[placed[start_el]][1]:  # if up
                     if not go(scheme, els[start_el][2], placed[start_el][0] + 1, placed[start_el][1],
                               placed[start_el][0] + 1, placed[start_el][1]):
@@ -348,12 +380,13 @@ def generate(scheme):
 def draw_pare(k_els):
     global scheme1, scheme2
     randomise(k_els)
-    # print(els)
-    # print(saved_conns)
     scheme1 = dict()
     scheme2 = dict()
     generate(scheme1)
-    change()
+    if change():
+        answers.append("ДА")
+    else:
+        answers.append("НЕТ")
     generate(scheme2)
     return merge_schemes(scheme1, scheme2)
 
@@ -377,9 +410,19 @@ def choose_directory():
     r.update()
 
 
+def is_num(s):
+    for i in s:
+        if not ord('0') <= ord(i) <= ord('9'):
+            return False
+    return True
+
+
 def run():
     if not choosed:
-        mb.showerror("Ошибка", "Выберите файл")
+        mb.showerror("Ошибка", "Выберите папку")
+        return
+    if not (is_num(que.get()) and is_num(k_els.get())):
+        mb.showerror("Ошибка", "Должно быть введено число")
         return
     q = int(que.get())
     k = int(k_els.get())
@@ -395,14 +438,19 @@ def run():
     l_process.grid(row=0, column=0, padx=10, pady=5, sticky=W)
     c.grid(row=1, column=0, padx=10, pady=5)
     r.update()
+    global answers
+    answers = []
     for i in range(q):
-        im = draw(draw_pare(k))
+        im = draw(draw_pare(k), i + 1)
         im.save(directory + '/' + str(i + 1) + ".png")
         l_process['text'] = "Генерация: " + str(i + 1) + " из " + str(q)
         c.create_rectangle(0, 0, int(1000 / q * (i + 1)), 40, fill="#0000dd")
         r.update()
+    with open(directory + '/answers.txt', 'w') as ans:
+        print("Ответы к заданиям 'Электрические схемы'\n'ДА' - схемы эквивалентны,'НЕТ' - не эквивалентны", file=ans)
+        for i, a in enumerate(answers):
+            print(i + 1, a, file=ans)
     r.destroy()
-
 
 
 r = Tk()

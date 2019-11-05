@@ -6,11 +6,14 @@ EL_SIZE = 100
 TAB = 5
 WIRE_WIDTH = 6
 h_or_v_els = {"battery", "switch", "resister"}
+tri_els = {"transistor"}
+one_els = {"contact+", "contact-"}
 
 
 class Cell:
     def __init__(self, s, row, column):
         data_cell = s.split()
+        print(data_cell)
         self.is_el = data_cell[0] != '-'
         self.up = bool(int(data_cell[1]))
         self.right = bool(int(data_cell[2]))
@@ -22,6 +25,24 @@ class Cell:
                     self.img_name = "Im_el/" + data_cell[0] + "/v.png"
                 else:
                     self.img_name = "Im_el/" + data_cell[0] + "/h.png"
+            elif data_cell[0] in tri_els:
+                if not self.up:
+                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
+                elif not self.right:
+                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
+                elif not self.left:
+                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
+                else:
+                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
+            elif data_cell[0] in one_els:
+                if self.up:
+                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
+                elif self.right:
+                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
+                elif self.left:
+                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
+                else:
+                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
             else:
                 self.img_name = "Im_el/" + data_cell[0] + ".png"
         self.x = row * (EL_SIZE + 2 * TAB) + TAB
@@ -42,6 +63,7 @@ class Cell:
                 imdraw.line([self.x - 1, self.y + EL_SIZE // 2, self.x - TAB - 1,
                                    self.y + EL_SIZE // 2], fill="black", width=WIRE_WIDTH)
             img = Image.open(self.img_name)
+            print(self.img_name)
             im.paste(img, (self.x, self.y))
         else:
             if self.up:
@@ -90,6 +112,8 @@ def work():
     global ph_im, im
     filename = fd.askopenfilename(filetypes=(("TXT files", "*.txt"), ("All files", "*.*")))
     scheme = read_from_file(filename)
+    for line in scheme:
+        print('  '.join(line))
     b_open.destroy()
     label.destroy()
     im = draw(scheme)

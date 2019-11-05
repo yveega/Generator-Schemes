@@ -13,7 +13,6 @@ one_els = {"contact+", "contact-"}
 class Cell:
     def __init__(self, s, row, column):
         data_cell = s.split()
-        print(data_cell)
         self.is_el = data_cell[0] != '-'
         self.up = bool(int(data_cell[1]))
         self.right = bool(int(data_cell[2]))
@@ -63,7 +62,6 @@ class Cell:
                 imdraw.line([self.x - 1, self.y + EL_SIZE // 2, self.x - TAB - 1,
                                    self.y + EL_SIZE // 2], fill="black", width=WIRE_WIDTH)
             img = Image.open(self.img_name)
-            print(self.img_name)
             im.paste(img, (self.x, self.y))
         else:
             if self.up:

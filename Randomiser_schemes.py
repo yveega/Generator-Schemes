@@ -1,4 +1,3 @@
-import sys
 import random
 from tkinter import *
 from tkinter import filedialog as fd

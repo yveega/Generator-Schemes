@@ -410,6 +410,8 @@ def choose_directory():
 
 
 def is_num(s):
+    if len(s) == 0:
+        return False
     for i in s:
         if not ord('0') <= ord(i) <= ord('9'):
             return False

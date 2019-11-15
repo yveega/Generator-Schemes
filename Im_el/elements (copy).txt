@@ -1,0 +1,15 @@
+ELEMENT_SIZE 100
+TAB 5
+WIRE_WIDTH 6
+resister 2
+battery 2
+lamp 0
+transistor 3
+contact+ 1
+contact- 1
+button 2
+condensator 2
+switch 2
+motor 2
+bell 2
++ 0

@@ -2,99 +2,8 @@ import random
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-from PIL import Image, ImageDraw, ImageFont
-types_of_els = ["resister", "switch", "lamp", "motor", "button", "bell", "condensator"]
-EL_SIZE = 100
-TAB = 5
-WIRE_WIDTH = 6
-h_or_v_els = {"battery", "switch", "resister", "motor", "button", "bell", "condensator"}
-tri_els = {"transistor"}
-one_els = {"contact+", "contact-"}
-
-
-class Cell:
-    def __init__(self, s, row, column):
-        data_cell = s.split()
-        self.is_el = data_cell[0] != '-'
-        self.up = bool(int(data_cell[1]))
-        self.right = bool(int(data_cell[2]))
-        self.down = bool(int(data_cell[3]))
-        self.left = bool(int(data_cell[4]))
-        if self.is_el:
-            if data_cell[0] in h_or_v_els:
-                if self.up or self.down:
-                    self.img_name = "Im_el/" + data_cell[0] + "/v.png"
-                else:
-                    self.img_name = "Im_el/" + data_cell[0] + "/h.png"
-            elif data_cell[0] in tri_els:
-                if not self.up:
-                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
-                elif not self.right:
-                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
-                elif not self.left:
-                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
-                else:
-                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
-            elif data_cell[0] in one_els:
-                if self.up:
-                    self.img_name = "Im_el/" + data_cell[0] + "/u.png"
-                elif self.right:
-                    self.img_name = "Im_el/" + data_cell[0] + "/r.png"
-                elif self.left:
-                    self.img_name = "Im_el/" + data_cell[0] + "/l.png"
-                else:
-                    self.img_name = "Im_el/" + data_cell[0] + "/d.png"
-            else:
-                self.img_name = "Im_el/" + data_cell[0] + ".png"
-        self.x = row * (EL_SIZE + 2 * TAB) + TAB
-        self.y = column * (EL_SIZE + 2 * TAB) + TAB
-
-    def draw_on_image(self, imdraw, im):
-        if self.is_el:
-            if self.up:
-                imdraw.line([self.x + EL_SIZE // 2, self.y - 1, self.x + EL_SIZE // 2,
-                                   self.y - TAB - 1], fill="black", width=WIRE_WIDTH)
-            if self.right:
-                imdraw.line([self.x + EL_SIZE, self.y + EL_SIZE // 2 - 1, self.x + EL_SIZE + TAB,
-                                   self.y + EL_SIZE // 2 - 1], fill="black", width=WIRE_WIDTH)
-            if self.down:
-                imdraw.line([self.x + EL_SIZE // 2 - 1, self.y + EL_SIZE, self.x + EL_SIZE // 2 - 1,
-                                   self.y + EL_SIZE + TAB], fill="black", width=WIRE_WIDTH)
-            if self.left:
-                imdraw.line([self.x - 1, self.y + EL_SIZE // 2, self.x - TAB - 1,
-                                   self.y + EL_SIZE // 2], fill="black", width=WIRE_WIDTH)
-            img = Image.open(self.img_name)
-            im.paste(img, (self.x, self.y))
-        else:
-            if self.up:
-                imdraw.line([self.x + EL_SIZE // 2, self.y + EL_SIZE // 2 + WIRE_WIDTH // 2 - 1, self.x + EL_SIZE // 2,
-                                   self.y - TAB - 1], fill="black", width=WIRE_WIDTH)
-            if self.right:
-                imdraw.line([self.x + EL_SIZE // 2 - WIRE_WIDTH // 2, self.y + EL_SIZE // 2 - 1, self.x + EL_SIZE + TAB,
-                                   self.y + EL_SIZE // 2 - 1], fill="black", width=WIRE_WIDTH)
-            if self.down:
-                imdraw.line([self.x + EL_SIZE // 2 - 1, self.y + EL_SIZE // 2 - WIRE_WIDTH // 2, self.x + EL_SIZE / 2 - 1,
-                                   self.y + EL_SIZE + TAB], fill="black", width=WIRE_WIDTH)
-            if self.left:
-                imdraw.line([self.x + EL_SIZE // 2 + WIRE_WIDTH // 2 - 1, self.y + EL_SIZE // 2, self.x - TAB - 1,
-                                   self.y + EL_SIZE // 2], fill="black", width=WIRE_WIDTH)
-
-
-def draw(scheme, num):
-    cells = []
-    for i in range(len(scheme)):
-        for j in range(len(scheme[i])):
-            cells.append(Cell(scheme[i][j], j, i))
-    W = len(scheme[0]) * (EL_SIZE + TAB * 2)
-    H = len(scheme) * (EL_SIZE + TAB * 2)
-    im = Image.new("RGB", (W, H), (255, 255, 255))
-    draw = ImageDraw.Draw(im)
-    for el in cells:
-        el.draw_on_image(draw, im)
-    font = ImageFont.truetype("UbuntuMono-B.ttf", 25)
-    draw.text([5, 5], str(num), fill="black", align="right", font=font)
-    del draw
-    return im
+from DrawScheme import *
+use_els = ["resister", "switch", "lamp", "motor", "button", "bell", "condensator"]
 
 
 def make_field(sch):
@@ -125,12 +34,6 @@ def make_field(sch):
         w4 = ' 1' if sch[cell][4] else ' 0'
         res[cell[0] - min_x][cell[1] - min_y] = el + w1 + w2 + w3 + w4
     return res
-
-
-def print_in_file(name, field):
-    with open(name, "w") as fo:
-        for line in field:
-            print('\t'.join(line), file=fo)
 
 
 def merge_schemes(sch1, sch2):
@@ -166,7 +69,7 @@ def conns(x1, y1, x2, y2):
 
 def randomise(k_els):
     global els, saved_conns
-    els = [random.choice(types_of_els) for _ in range(k_els)]
+    els = [random.choice(use_els) for _ in range(k_els)]
     saved_conns = [set()]
     for n in range(len(els) - 1):
         one = len(saved_conns) - 1
@@ -205,10 +108,10 @@ def change():
             saved_conns[1].remove(two)
             saved_conns[1].add(one)
         else:
-            new_el = random.choice(types_of_els)
+            new_el = random.choice(use_els)
             num_change = random.randint(0, len(els) - 3)
             while new_el == els[num_change][0]:
-                new_el = random.choice(types_of_els)
+                new_el = random.choice(use_els)
             els[num_change] = (new_el, els[num_change][1], els[num_change][2])
         return False
     return True
@@ -454,6 +357,7 @@ def run():
     r.destroy()
 
 
+load_base()
 r = Tk()
 r.title("Генератор заданий")
 r['bg'] = "#ffdddd"

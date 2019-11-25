@@ -98,21 +98,20 @@ def select():
     global img, tk_img
     img = Image.open(filename)
     tk_img = PhotoImage(file=filename)
-    picture = Label(r_add, text="Выбрано:\n" + name(filename), font=FONT, fg="blue", bg="lightblue", width=14)
+    picture = Label(r_add, image=tk_img)
     picture.grid(row=2, column=1)
     select_im.destroy()
-    # print(picture['image'])
 
 
 def add_el():
     global r_add, up, down, right, left, b_up, b_down, b_right, b_left, select_im, img, e_name
     img = -1
-    r_add = Tk()
+    r_add = Toplevel()
     r_add.title("Добавление элемента")
     r_add['bg'] = "lightblue"
     label = Label(r_add, text="Выберите изображние и отметьте стороны с соединением",
                   bg="lightblue", font=FONT, wraplength=280)
-    select_im = Button(r_add, text="Выбрать\nФормат:.png\nРазмер:\n100x100px", command=select, bg="gray60", activebackground="gray65",
+    select_im = Button(r_add, text="Выбрать\nФормат:.png\nРазмер:\n100x100px", command=select, bg="gray80", activebackground="gray85",
                        fg="red", activeforeground="red", font=FONT, width=10, height=6)
     b_up = Button(r_add, text='', bg="#ddddff", activebackground="#ddddff",
                   width=15, height=2, command=up_change)
